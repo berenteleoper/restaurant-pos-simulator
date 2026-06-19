@@ -12,7 +12,13 @@
 
 <body>
   <div class="container-fluid py-4">
-    <h1 class="text-center mb-4">POS Sipariş Sistemi</h1>
+    <div class="app-header">
+      <h1>POS Sipariş Sistemi</h1>
+
+      <button id="themeToggleBtn" class="theme-toggle-btn">
+        🌙 Dark Mode
+      </button>
+    </div>
 
     <div class="main-layout">
 
@@ -41,7 +47,7 @@
         </div>
       </div>
 
-       <div class="kitchen-panel">
+      <div class="kitchen-panel">
         <div class="panel">
           <h4>Mutfak Ekranı</h4>
           <div id="kitchenOrders" class="kitchen-orders">
@@ -105,23 +111,26 @@
   </div>
 
   <div class="dashboard-row">
+    <div class="dashboard-card">
+      <h6>Toplam Satış</h6>
+      <span id="dashboardSales">₺0</span>
+    </div>
 
-  <div class="dashboard-card">
-    <h6>Sipariş</h6>
-    <span id="dashboardOrderCount">0</span>
+    <div class="dashboard-card">
+      <h6>Ödenen Sipariş</h6>
+      <span id="dashboardOrderCount">0</span>
+    </div>
+
+    <div class="dashboard-card">
+      <h6>Bekleyen</h6>
+      <span id="dashboardWaiting">0</span>
+    </div>
+
+    <div class="dashboard-card">
+      <h6>Mutfakta Hazır</h6>
+      <span id="dashboardReady">0</span>
+    </div>
   </div>
-
-  <div class="dashboard-card">
-    <h6>Satış</h6>
-    <span id="dashboardSales">₺0</span>
-  </div>
-
-  <div class="dashboard-card">
-    <h6>Hazır</h6>
-    <span id="dashboardReady">0</span>
-  </div>
-
-</div>
 
   <div id="toastContainer" class="toast-container-custom"></div>
 

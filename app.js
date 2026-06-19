@@ -8,6 +8,7 @@ const products = [
 
 let cart = [];
 let posOrders = [];
+let paidOrders = [];
 let activePosOrderId = null;
 let nextOrderNo = 1;
 let nextReceiptNo = 1;
@@ -16,16 +17,41 @@ let paymentDoneAnimation = null;
 
 $(document).ready(function () {
   loadState();
+
   renderProducts();
   renderCart();
   renderPosOrders();
   renderKitchenOrders();
-  loadPosAnimation();
+  updateDashboard();
+  loadTheme();
+
   loadPaymentDoneAnimation();
 
+  $("#themeToggleBtn").on("click", toggleTheme);
   $("#sendToPosBtn").on("click", sendCartToPos);
   $("#payBtn").on("click", makePayment);
 });
+
+function toggleTheme() {
+  $("body").toggleClass("dark-mode");
+
+  const isDark = $("body").hasClass("dark-mode");
+
+  localStorage.setItem("pos_theme", isDark ? "dark" : "light");
+
+  $("#themeToggleBtn").text(isDark ? "☀️ Light Mode" : "🌙 Dark Mode");
+}
+
+function loadTheme() {
+  const savedTheme = localStorage.getItem("pos_theme");
+
+  if (savedTheme === "dark") {
+    $("body").addClass("dark-mode");
+    $("#themeToggleBtn").text("☀️ Light Mode");
+  } else {
+    $("#themeToggleBtn").text("🌙 Dark Mode");
+  }
+}
 
 function loadPosAnimation() {
   posAnimation = lottie.loadAnimation({
@@ -170,11 +196,13 @@ function sendCartToPos() {
   posOrders.push(newOrder);
 
   cart = [];
-  renderCart();
 
+  renderCart();
   renderPosOrders();
   renderKitchenOrders();
+  updateDashboard();
   saveState();
+
   showToast("Sipariş POS ekranına gönderildi", "info");
 }
 
@@ -322,9 +350,16 @@ function makePayment() {
 
     renderReceipt(order);
 
+    paidOrders.push({
+      ...order,
+      paidAt: new Date(),
+    });
+
     posOrders = posOrders.filter((x) => x.id !== activePosOrderId);
     activePosOrderId = null;
+
     renderKitchenOrders();
+    updateDashboard();
     saveState();
 
     $("#posTotal").text("₺0");
@@ -432,6 +467,7 @@ function saveState() {
   const state = {
     cart,
     posOrders,
+    paidOrders,
     activePosOrderId,
     nextOrderNo,
     nextReceiptNo,
@@ -441,17 +477,18 @@ function saveState() {
 }
 
 function loadState() {
-  const saveState = localStorage.getItem("pos_order_simulator_state");
+  const savedState = localStorage.getItem("pos_order_simulator_state");
 
-  if (!saveState) return;
+  if (!savedState) return;
 
-  const state = JSON.parse(saveState);
+  const state = JSON.parse(savedState);
 
   cart = state.cart || [];
   posOrders = state.posOrders || [];
+  paidOrders = state.paidOrders || [];
   activePosOrderId = state.activePosOrderId || null;
-  nextOrderNo = state.newOrder || 1;
   nextOrderNo = state.nextOrderNo || 1;
+  nextReceiptNo = state.nextReceiptNo || 1;
 }
 
 function renderKitchenOrders() {
@@ -541,6 +578,24 @@ function updateKitchenStatus(orderId) {
   }
 
   renderKitchenOrders();
+  updateDashboard();
   saveState();
+}
+
+function updateDashboard() {
+  const totalSales = paidOrders.reduce((total, order) => {
+    return total + calculateTotal(order.items);
+  }, 0);
+
+  const paidCount = paidOrders.length;
+  const waitingCount = posOrders.length;
+  const readyCount = posOrders.filter((order) => {
+    return order.kitchenStatus === "ready";
+  }).length;
+
+  $("#dashboardSales").text(`₺${totalSales}`);
+  $("#dashboardOrderCount").text(paidCount);
+  $("#dashboardWaiting").text(waitingCount);
+  $("#dashboardReady").text(readyCount);
 }
 
